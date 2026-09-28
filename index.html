@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full bg-slate-950 text-slate-100 select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ソルフェジオ & 脳波ヒーリング デジタル音叉</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* 幻想的な背景グラデーション */
+    .healing-bg {
+      background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%);
+    }
+
+    /* 音叉のアーム振動 */
+    @keyframes forkVibrateLeft {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-2.8deg); }
+    }
+    @keyframes forkVibrateRight {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(2.8deg); }
+    }
+
+    .vibrating-left {
+      animation: forkVibrateLeft 0.035s infinite alternate ease-in-out;
+      transform-origin: bottom center;
+    }
+    .vibrating-right {
+      animation: forkVibrateRight 0.035s infinite alternate ease-in-out;
+      transform-origin: bottom center;
+    }
+
+    /* 周波数波動オーラアニメーション */
+    @keyframes auraPulse {
+      0% { transform: scale(0.85); opacity: 0.2; }
+      50% { transform: scale(1.25); opacity: 0.6; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .aura-ring {
+      animation: auraPulse 2.8s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
+    }
+
+    /* カスタムデザインスライダー */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+      border: 2px solid #ffffff;
+    }
+
+    /* カスタムスクロールバー */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col justify-between overflow-x-hidden healing-bg text-slate-100">
+
+  <!-- ヘッダー -->
+  <header class="p-4 flex justify-between items-center border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30">
+    <div class="flex items-center space-x-2.5">
+      <div id="auraDot" class="w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399] transition-colors duration-500"></div>
+      <div>
+        <h1 class="font-bold text-base md:text-lg tracking-wide text-slate-100">周波数ヒーリング音叉</h1>
+        <p class="text-[10px] text-slate-400">SOLFEGGIO & BINAURAL BEATS</p>
+      </div>
+    </div>
+    
+    <!-- モード切り替え（音叉減衰 / 連続トーン / バイノーラル脳波） -->
+    <div class="flex bg-slate-800/90 p-1 rounded-xl border border-slate-700/60 text-xs">
+      <button id="modeForkBtn" class="px-2.5 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+        🔔 音叉
+      </button>
+      <button id="modeContBtn" class="px-2.5 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
+        ♾️ 連続
+      </button>
+      <button id="modeBrainBtn" class="px-2.5 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
+        🧠 脳波
+      </button>
+    </div>
+  </header>
+
+  <!-- メイン表示領域（音叉 & オーラアニメーション） -->
+  <main class="flex-1 flex flex-col justify-center items-center relative px-4 py-2 my-auto">
+    
+    <!-- バックグラウンド・オーラ波紋（周波数カラーと連動） -->
+    <div id="auraCanvas" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 transition-opacity duration-700">
+      <div id="auraRing1" class="w-72 h-72 border-2 border-emerald-400/30 rounded-full absolute aura-ring" style="animation-delay: 0s;"></div>
+      <div id="auraRing2" class="w-72 h-72 border border-emerald-300/20 rounded-full absolute aura-ring" style="animation-delay: 0.9s;"></div>
+      <div id="auraRing3" class="w-72 h-72 border border-emerald-200/10 rounded-full absolute aura-ring" style="animation-delay: 1.8s;"></div>
+    </div>
+
+    <!-- 音叉グラフィック（SVG） -->
+    <div id="forkContainer" class="relative cursor-pointer transition-transform duration-150 active:scale-95 my-1 flex flex-col items-center z-10 group">
+      
+      <svg width="190" height="230" viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_10px_30px_rgba(52,211,153,0.25)]">
+        <defs>
+          <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#64748b" />
+            <stop offset="35%" stop-color="#f8fafc" />
+            <stop offset="50%" stop-color="#e2e8f0" />
+            <stop offset="70%" stop-color="#94a3b8" />
+            <stop offset="100%" stop-color="#334155" />
+          </linearGradient>
+
+          <linearGradient id="glowOverlay" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop id="glowStop1" offset="0%" stop-color="#34d399" stop-opacity="0.6"/>
+            <stop id="glowStop2" offset="100%" stop-color="#059669" stop-opacity="0.1"/>
+          </linearGradient>
+        </defs>
+
+        <!-- 柄・台座 -->
+        <path d="M93,170 L107,170 L105,240 Q100,250 95,240 Z" fill="url(#metalGrad)" stroke="#334155" stroke-width="1" />
+        <line x1="93" y1="185" x2="107" y2="185" stroke="#475569" stroke-width="1.5" />
+        <line x1="93" y1="195" x2="107" y2="195" stroke="#475569" stroke-width="1.5" />
+        <line x1="93" y1="205" x2="107" y2="205" stroke="#475569" stroke-width="1.5" />
+        <circle cx="100" cy="242" r="5" fill="url(#metalGrad)" />
+
+        <!-- U字ベース -->
+        <path d="M70,120 Q70,170 100,170 Q130,170 130,120 L115,120 Q115,152 100,152 Q85,152 85,120 Z" fill="url(#metalGrad)" />
+
+        <!-- 左アーム -->
+        <g id="leftProng">
+          <rect x="70" y="20" width="15" height="102" rx="4" fill="url(#metalGrad)" />
+          <rect x="70" y="20" width="15" height="102" rx="4" fill="url(#glowOverlay)" />
+          <rect x="73" y="22" width="3" height="98" rx="1.5" fill="#ffffff" opacity="0.7" />
+        </g>
+
+        <!-- 右アーム -->
+        <g id="rightProng">
+          <rect x="115" y="20" width="15" height="102" rx="4" fill="url(#metalGrad)" />
+          <rect x="115" y="20" width="15" height="102" rx="4" fill="url(#glowOverlay)" />
+          <rect x="118" y="22" width="3" height="98" rx="1.5" fill="#ffffff" opacity="0.7" />
+        </g>
+      </svg>
+
+      <!-- タップ発音ヒント -->
+      <div id="tapHint" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        <span class="text-xs bg-slate-900/90 text-emerald-300 px-3.5 py-1.5 rounded-full border border-emerald-500/40 shadow-xl tracking-wider animate-pulse flex items-center gap-1.5">
+          <span>✨</span> タップして音叉を鳴らす
+        </span>
+      </div>
+    </div>
+
+    <!-- 周波数 & 効能カードディスプレイ -->
+    <div class="mt-2 bg-slate-900/80 border border-slate-800/90 p-4 rounded-2xl w-full max-w-md backdrop-blur-md shadow-2xl transition-all duration-300">
+      
+      <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 mb-2">
+        <div class="flex items-center space-x-2">
+          <span id="badgeCategory" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-semibold">
+            ソルフェジオ
+          </span>
+          <span id="noteName" class="text-xs font-bold text-slate-300">528Hz (愛と奇跡)</span>
+        </div>
+        <div id="binauralTag" class="hidden text-[10px] text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
+          🎧 バイノーラル 6Hz (シータ)
+        </div>
+      </div>
+
+      <!-- 周波数数字表示 -->
+      <div class="flex items-baseline justify-center space-x-1.5 my-1">
+        <span id="freqDisplay" class="text-4xl md:text-5xl font-extrabold text-white font-mono-num tracking-tight drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+          528.0
+        </span>
+        <span class="text-lg font-semibold text-slate-400">Hz</span>
+      </div>
+
+      <!-- 周波数の効果・メッセージ -->
+      <div class="mt-2 bg-slate-950/60 rounded-xl p-2.5 border border-slate-800/50 text-center">
+        <p id="freqTitle" class="text-xs font-bold text-emerald-300 mb-0.5">【愛と奇跡の周波数 / DNAの修復】</p>
+        <p id="freqDesc" class="text-[11px] text-slate-300 leading-relaxed">
+          理想的な状態への変容。不安やストレスを和らげ、深いリラックスと細胞レベルの調和をもたらします。
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 下部コントロールパネル -->
+  <footer class="bg-slate-900/90 border-t border-slate-800/80 p-4 rounded-t-3xl backdrop-blur-xl space-y-3.5 max-w-lg mx-auto w-full z-20 shadow-2xl">
+    
+    <!-- 周波数調整スライダー (20Hz 〜 1200Hz の広帯域) -->
+    <div class="space-y-1">
+      <div class="flex justify-between text-[11px] text-slate-400 font-mono-num">
+        <span>20 Hz</span>
+        <span class="text-slate-300 font-semibold">周波数レンジ</span>
+        <span>1200 Hz</span>
+      </div>
+      <input type="range" id="freqSlider" min="20" max="1200" step="0.1" value="528" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+    </div>
+
+    <!-- 高精度 微調整ステップボタン (+/-) -->
+    <div class="grid grid-cols-6 gap-1.5">
+      <button class="step-btn py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg font-mono-num text-xs border border-slate-700/70 text-slate-200 transition" data-step="-50">-50</button>
+      <button class="step-btn py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg font-mono-num text-xs border border-slate-700/70 text-slate-200 transition" data-step="-10">-10</button>
+      <button class="step-btn py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg font-mono-num text-xs border border-slate-700/70 text-slate-200 transition" data-step="-1">-1</button>
+      <button class="step-btn py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg font-mono-num text-xs border border-slate-700/70 text-slate-200 transition" data-step="1">+1</button>
+      <button class="step-btn py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg font-mono-num text-xs border border-slate-700/70 text-slate-200 transition" data-step="10">+10</button>
+      <button class="step-btn py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg font-mono-num text-xs border border-slate-700/70 text-slate-200 transition" data-step="50">+50</button>
+    </div>
+
+    <!-- ソルフェジオ & ヒーリング周波数 プリセットボタン (横スクロール) -->
+    <div>
+      <div class="text-[11px] text-slate-400 mb-1.5 font-medium flex justify-between items-center">
+        <span>✨ ソルフェジオ・主要周波数プリセット:</span>
+        <div class="flex items-center gap-1">
+          <button id="scrollLeftBtn" type="button" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 rounded-md border border-slate-700/80 text-[10px] transition" title="左へスライド">◀</button>
+          <button id="scrollRightBtn" type="button" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 rounded-md border border-slate-700/80 text-[10px] transition" title="右へスライド">▶</button>
+        </div>
+      </div>
+      <div id="solfeggioContainer" class="flex gap-2 overflow-x-auto no-scrollbar pb-1 scroll-smooth cursor-grab active:cursor-grabbing select-none">
+        <!-- JSで動的割り当て -->
+      </div>
+    </div>
+
+    <!-- 脳波バイノーラルビート セレクト (ヘッドホン推奨) -->
+    <div id="binauralSection" class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80">
+      <div class="flex justify-between items-center mb-1.5">
+        <span class="text-[11px] font-semibold text-cyan-300 flex items-center gap-1">
+          <span>🎧</span> 脳波バイノーラルビート (左右差の脈動)
+        </span>
+        <label class="inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="binauralToggle" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500"></div>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-5 gap-1.5 opacity-50 pointer-events-none transition-opacity duration-300" id="binauralBtnGroup">
+        <button class="brain-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-center border border-slate-700 text-slate-200" data-beat="2" data-name="デルタ波 (2Hz)" data-desc="熟睡・身体修復・深い瞑想">
+          <div class="text-[11px] font-bold text-cyan-300">デルタ</div>
+          <div class="text-[9px] text-slate-400">2Hz</div>
+        </button>
+        <button class="brain-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-center border border-slate-700 text-slate-200" data-beat="6" data-name="シータ波 (6Hz)" data-desc="ひらめき・深いリラックス・潜在意識">
+          <div class="text-[11px] font-bold text-cyan-300">シータ</div>
+          <div class="text-[9px] text-slate-400">6Hz</div>
+        </button>
+        <button class="brain-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-center border border-slate-700 text-slate-200" data-beat="10" data-name="アルファ波 (10Hz)" data-desc="ストレス軽減・集中とリラックスの両立">
+          <div class="text-[11px] font-bold text-cyan-300">アルファ</div>
+          <div class="text-[9px] text-slate-400">10Hz</div>
+        </button>
+        <button class="brain-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-center border border-slate-700 text-slate-200" data-beat="20" data-name="ベータ波 (20Hz)" data-desc="アクティブな覚醒・学習・集中力向上">
+          <div class="text-[11px] font-bold text-cyan-300">ベータ</div>
+          <div class="text-[9px] text-slate-400">20Hz</div>
+        </button>
+        <button class="brain-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-center border border-slate-700 text-slate-200" data-beat="40" data-name="ガンマ波 (40Hz)" data-desc="超集中・高度なひらめき・認知活性">
+          <div class="text-[11px] font-bold text-cyan-300">ガンマ</div>
+          <div class="text-[9px] text-slate-400">40Hz</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 発音 / 停止 アクションボタン -->
+    <div class="pt-1 flex gap-2">
+      <button id="playBtn" class="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:opacity-90 rounded-xl font-bold text-white shadow-lg shadow-emerald-500/20 flex justify-center items-center space-x-2 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span id="playBtnText">音叉を叩いて調律</span>
+      </button>
+      <button id="stopBtn" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl font-semibold transition flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // ----------------------------------------------------
+    // ソルフェジオ周波数 ＆ ヒーリング解説データ
+    // ----------------------------------------------------
+    const SOLFEGGIO_DATA = [
+      { freq: 174.0, name: '174Hz', tag: '意識の拡大', color: '#f43f5e', title: '【苦痛和らげと安定の周波数】', desc: '心を安定させ、心身の苦痛や緊張を和らげる効果があるとされています。' },
+      { freq: 285.0, name: '285Hz', tag: '多次元領域', color: '#fb923c', title: '【自然治癒力と細胞促進】', desc: '傷ついた組織や細胞の修復を促し、身体の本来の状態へ整えます。' },
+      { freq: 396.0, name: '396Hz', tag: '罪悪感の解放', color: '#facc15', title: '【恐怖・トラウマの解放】', desc: 'モヤモヤした罪悪感や恐怖心を取り払い、前向きな希望をもたらします。' },
+      { freq: 417.0, name: '417Hz', tag: 'マイナス脱却', color: '#a3e635', title: '【変化の促し・マイナス解消】', desc: 'ネガティブな状況からの脱却。ストレス原因からの解放をサポートします。' },
+      { freq: 432.0, name: '432Hz', tag: '宇宙の調和', color: '#38bdf8', title: '【自然・宇宙と共鳴するピッチ】', desc: 'シューマン共振（地球の振動）と調和し、深い安らぎを与える周波数です。' },
+      { freq: 440.0, name: '440Hz', tag: '国際標準ピッチ', color: '#94a3b8', title: '【現代音楽の標準A4音】', desc: '一般的な楽器調律の基準音。正確な音程合わせに利用されます。' },
+      { freq: 528.0, name: '528Hz', tag: '奇跡・DNA修復', color: '#34d399', title: '【愛と奇跡の周波数 / DNA修復】', desc: '理想的な状態への変容。不安やストレスを軽減し、深いリラックスをもたらします。' },
+      { freq: 639.0, name: '639Hz', tag: '調和・対人関係', color: '#818cf8', title: '【調和と人間関係の修復】', desc: '調和の周波数。対人関係の円滑化や愛・感謝の気持ちを高めます。' },
+      { freq: 741.0, name: '741Hz', tag: '表現力・浄化', color: '#c084fc', title: '【問題解決・自由な表現力】', desc: '表現力を引き出し、体内の不要なエネルギーを浄化・クリアにします。' },
+      { freq: 852.0, name: '852Hz', tag: '直感力・開眼', color: '#f472b6', title: '【直感力の目覚め・サードアイ】', desc: '脳の覚醒を促し、直感やひらめきを高めるスピリチュアルな周波数です。' },
+      { freq: 963.0, name: '963Hz', tag: '高次元・宇宙意識', color: '#e879f9', title: '【高次元の意識・宇宙との一体化】', desc: '松果体を活性化させ、高次の意識空間と繋がると言われています。' }
+    ];
+
+    // Web Audio API & アプリ状態
+    let audioCtx = null;
+    let mainOscL = null;
+    let mainOscR = null;
+    let masterGain = null;
+    let isPlaying = false;
+    let forkTimer = null;
+    
+    let currentFreq = 528.0;
+    let currentMode = 'fork'; // 'fork' (打撃減衰), 'cont' (連続再生), 'brain' (脳波バイノーラル)
+    
+    let isBinauralEnabled = false;
+    let binauralBeatFreq = 6.0; // デフォルト：シータ波 6Hz
+
+    // DOM要素
+    const freqDisplay = document.getElementById('freqDisplay');
+    const freqSlider = document.getElementById('freqSlider');
+    const noteName = document.getElementById('noteName');
+    const freqTitle = document.getElementById('freqTitle');
+    const freqDesc = document.getElementById('freqDesc');
+    const auraDot = document.getElementById('auraDot');
+    const badgeCategory = document.getElementById('badgeCategory');
+    const binauralTag = document.getElementById('binauralTag');
+
+    const forkContainer = document.getElementById('forkContainer');
+    const leftProng = document.getElementById('leftProng');
+    const rightProng = document.getElementById('rightProng');
+    const auraCanvas = document.getElementById('auraCanvas');
+    const auraRing1 = document.getElementById('auraRing1');
+    const auraRing2 = document.getElementById('auraRing2');
+    const auraRing3 = document.getElementById('auraRing3');
+    const tapHint = document.getElementById('tapHint');
+
+    const playBtn = document.getElementById('playBtn');
+    const playBtnText = document.getElementById('playBtnText');
+    const stopBtn = document.getElementById('stopBtn');
+
+    const modeForkBtn = document.getElementById('modeForkBtn');
+    const modeContBtn = document.getElementById('modeContBtn');
+    const modeBrainBtn = document.getElementById('modeBrainBtn');
+
+    const binauralToggle = document.getElementById('binauralToggle');
+    const binauralBtnGroup = document.getElementById('binauralBtnGroup');
+    const solfeggioContainer = document.getElementById('solfeggioContainer');
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // ★ Web Audio API: リアルタイム音叉＆連続音生成エンジン
+    function strikeTuningFork() {
+      initAudio();
+
+      // 連続モード中に再生ボタンを押した場合はトール（再生/停止）の切り替え
+      if (isPlaying && currentMode !== 'fork') {
+        stopSound();
+        return;
+      }
+
+      // 既存の音声を即時クリーンアップしてノイズやタイマー重複を防止
+      clearActiveSound();
+
+      const now = audioCtx.currentTime;
+      masterGain = audioCtx.createGain();
+
+      // バイノーラルビート処理（左右チャンネル分割）
+      if (isBinauralEnabled || currentMode === 'brain') {
+        const halfBeat = binauralBeatFreq / 2;
+        const freqL = Math.max(20, currentFreq - halfBeat);
+        const freqR = Math.max(20, currentFreq + halfBeat);
+
+        mainOscL = audioCtx.createOscillator();
+        mainOscR = audioCtx.createOscillator();
+        
+        const pannerL = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+        const pannerR = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+
+        mainOscL.type = 'sine';
+        mainOscR.type = 'sine';
+
+        mainOscL.frequency.setValueAtTime(freqL, now);
+        mainOscR.frequency.setValueAtTime(freqR, now);
+
+        if (pannerL && pannerR) {
+          pannerL.pan.setValueAtTime(-1, now); // 左チャンネル
+          pannerR.pan.setValueAtTime(1, now);  // 右チャンネル
+
+          mainOscL.connect(pannerL);
+          pannerL.connect(masterGain);
+
+          mainOscR.connect(pannerR);
+          pannerR.connect(masterGain);
+        } else {
+          mainOscL.connect(masterGain);
+          mainOscR.connect(masterGain);
+        }
+
+        mainOscL.start(now);
+        mainOscR.start(now);
+
+      } else {
+        // モノラル単音トーン
+        mainOscL = audioCtx.createOscillator();
+        mainOscL.type = 'sine';
+        mainOscL.frequency.setValueAtTime(currentFreq, now);
+        mainOscL.connect(masterGain);
+        mainOscL.start(now);
+      }
+
+      // 音叉のアタック金属打撃音（音叉モードのときのみ付加）
+      if (currentMode === 'fork') {
+        const clinkOsc = audioCtx.createOscillator();
+        const clinkGain = audioCtx.createGain();
+        clinkOsc.type = 'sine';
+        clinkOsc.frequency.setValueAtTime(currentFreq * 5.8, now);
+
+        clinkGain.gain.setValueAtTime(0.18, now);
+        clinkGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+        clinkOsc.connect(clinkGain);
+        clinkGain.connect(audioCtx.destination);
+        clinkOsc.start(now);
+        clinkOsc.stop(now + 0.1);
+      }
+
+      // エンベロープ（音量）制御
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(0.001, now);
+      masterGain.gain.linearRampToValueAtTime(0.5, now + 0.04);
+
+      if (currentMode === 'fork') {
+        // 音叉モード: 8秒かけてゆっくり自然減衰
+        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 8.0);
+      } else {
+        // 連続・脳波モード: 減衰をかけず、ずっと一定の音量を完全保持
+        masterGain.gain.setValueAtTime(0.5, now + 0.04);
+      }
+
+      masterGain.connect(audioCtx.destination);
+      isPlaying = true;
+
+      // ビジュアル＆UI状態の更新
+      startVisuals();
+      updatePlayBtnUI();
+
+      if (navigator.vibrate) navigator.vibrate(25);
+
+      // 音叉モードのみタイマーで視覚・音声を自動消音
+      if (currentMode === 'fork') {
+        forkTimer = setTimeout(() => {
+          if (isPlaying && currentMode === 'fork') {
+            stopSound();
+          }
+        }, 8000);
+      }
+    }
+
+    // 古いオシレーターとタイマーの安全なクリーンアップ
+    function clearActiveSound() {
+      if (forkTimer) {
+        clearTimeout(forkTimer);
+        forkTimer = null;
+      }
+      if (mainOscL) {
+        try { mainOscL.stop(); mainOscL.disconnect(); } catch (e) {}
+        mainOscL = null;
+      }
+      if (mainOscR) {
+        try { mainOscR.stop(); mainOscR.disconnect(); } catch (e) {}
+        mainOscR = null;
+      }
+      if (masterGain) {
+        try { masterGain.disconnect(); } catch (e) {}
+        masterGain = null;
+      }
+    }
+
+    // 音の滑らかな停止
+    function stopSound() {
+      if (forkTimer) {
+        clearTimeout(forkTimer);
+        forkTimer = null;
+      }
+
+      if (isPlaying && masterGain && audioCtx) {
+        try {
+          const now = audioCtx.currentTime;
+          masterGain.gain.cancelScheduledValues(now);
+          masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.08);
+          
+          const oldOscL = mainOscL;
+          const oldOscR = mainOscR;
+          const oldGain = masterGain;
+
+          mainOscL = null;
+          mainOscR = null;
+          masterGain = null;
+
+          setTimeout(() => {
+            try { if (oldOscL) oldOscL.stop(); } catch(e){}
+            try { if (oldOscR) oldOscR.stop(); } catch(e){}
+            try { if (oldGain) oldGain.disconnect(); } catch(e){}
+          }, 90);
+        } catch (e) {
+          clearActiveSound();
+        }
+      } else {
+        clearActiveSound();
+      }
+
+      isPlaying = false;
+      stopVisuals();
+      updatePlayBtnUI();
+    }
+
+    // 周波数の動的・リアルタイムスムーズ変更
+    function updateFrequency(freq, isUserAction = true) {
+      currentFreq = Math.max(20, Math.min(1200, parseFloat(freq)));
+      freqDisplay.textContent = currentFreq.toFixed(1);
+      freqSlider.value = currentFreq;
+
+      // 音が鳴っている最中は音量を途切れさせずリアルタイムで周波数のみスムーズスライド
+      if (isPlaying && audioCtx) {
+        const now = audioCtx.currentTime;
+        if (isBinauralEnabled || currentMode === 'brain') {
+          const halfBeat = binauralBeatFreq / 2;
+          const targetL = Math.max(20, currentFreq - halfBeat);
+          const targetR = Math.max(20, currentFreq + halfBeat);
+          if (mainOscL) mainOscL.frequency.setTargetAtTime(targetL, now, 0.03);
+          if (mainOscR) mainOscR.frequency.setTargetAtTime(targetR, now, 0.03);
+        } else {
+          if (mainOscL) mainOscL.frequency.setTargetAtTime(currentFreq, now, 0.03);
+        }
+      }
+
+      updateSolfeggioInfo();
+    }
+
+    // 再生ボタンの表示更新（再生中・停止中）
+    function updatePlayBtnUI() {
+      if (isPlaying) {
+        if (currentMode === 'fork') {
+          playBtnText.textContent = "音叉を鳴らし直す";
+        } else {
+          playBtnText.textContent = "🔊 連続再生中 (タップで停止)";
+        }
+        playBtn.classList.remove('from-emerald-500', 'to-teal-600');
+        playBtn.classList.add('from-amber-500', 'to-orange-600');
+      } else {
+        if (currentMode === 'fork') {
+          playBtnText.textContent = "音叉を叩いて調律";
+        } else if (currentMode === 'cont') {
+          playBtnText.textContent = "連続トーンを出力";
+        } else {
+          playBtnText.textContent = "脳波バイノーラル再生";
+        }
+        playBtn.classList.remove('from-amber-500', 'to-orange-600');
+        playBtn.classList.add('from-emerald-500', 'to-teal-600');
+      }
+    }
+
+    // ソルフェジオ情報・カラーテーマ更新
+    function updateSolfeggioInfo() {
+      const matched = SOLFEGGIO_DATA.find(s => Math.abs(s.freq - currentFreq) < 0.5);
+
+      if (matched) {
+        badgeCategory.textContent = matched.tag;
+        noteName.textContent = `${matched.name} (${matched.tag})`;
+        freqTitle.textContent = matched.title;
+        freqDesc.textContent = matched.desc;
+
+        setThemeColor(matched.color);
+      } else {
+        badgeCategory.textContent = 'カスタム';
+        noteName.textContent = `${currentFreq.toFixed(1)} Hz`;
+        freqTitle.textContent = '【フリーチューニング周波数】';
+        freqDesc.textContent = 'スライダーまたはボタンで自由な周波数に調整しています。';
+        setThemeColor('#38bdf8');
+      }
+
+      document.querySelectorAll('.solfeggio-btn').forEach(btn => {
+        const f = parseFloat(btn.dataset.freq);
+        if (Math.abs(f - currentFreq) < 0.5) {
+          btn.classList.add('border-emerald-400', 'bg-emerald-950/80', 'text-emerald-200');
+          btn.classList.remove('border-slate-700/80', 'bg-slate-800/80', 'text-slate-300');
+          btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } else {
+          btn.classList.remove('border-emerald-400', 'bg-emerald-950/80', 'text-emerald-200');
+          btn.classList.add('border-slate-700/80', 'bg-slate-800/80', 'text-slate-300');
+        }
+      });
+    }
+
+    // テーマカラー変更
+    function setThemeColor(hexColor) {
+      auraDot.style.backgroundColor = hexColor;
+      auraDot.style.boxShadow = `0 0 12px ${hexColor}`;
+
+      auraRing1.style.borderColor = hexColor;
+      auraRing2.style.borderColor = hexColor;
+      auraRing3.style.borderColor = hexColor;
+
+      const glowStop1 = document.getElementById('glowStop1');
+      if (glowStop1) glowStop1.setAttribute('stop-color', hexColor);
+    }
+
+    function startVisuals() {
+      leftProng.classList.add('vibrating-left');
+      rightProng.classList.add('vibrating-right');
+      auraCanvas.classList.remove('opacity-0');
+      auraCanvas.classList.add('opacity-80');
+      tapHint.classList.add('hidden');
+    }
+
+    function stopVisuals() {
+      leftProng.classList.remove('vibrating-left');
+      rightProng.classList.remove('vibrating-right');
+      auraCanvas.classList.remove('opacity-80');
+      auraCanvas.classList.add('opacity-0');
+    }
+
+    // モード切り替え
+    function setMode(mode) {
+      currentMode = mode;
+
+      modeForkBtn.className = "px-2.5 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200";
+      modeContBtn.className = "px-2.5 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200";
+      modeBrainBtn.className = "px-2.5 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200";
+
+      if (mode === 'fork') {
+        modeForkBtn.className = "px-2.5 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+      } else if (mode === 'cont') {
+        modeContBtn.className = "px-2.5 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+      } else if (mode === 'brain') {
+        modeBrainBtn.className = "px-2.5 py-1.5 rounded-lg font-medium transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40";
+        if (!isBinauralEnabled) {
+          binauralToggle.checked = true;
+          toggleBinaural(true);
+        }
+      }
+
+      // 音が鳴っている最中のモード切り替えはスムーズに音源を移行
+      if (isPlaying) {
+        strikeTuningFork();
+      } else {
+        updatePlayBtnUI();
+      }
+    }
+
+    // バイノーラル機能切り替え
+    function toggleBinaural(enabled) {
+      isBinauralEnabled = enabled;
+      if (enabled) {
+        binauralBtnGroup.classList.remove('opacity-50', 'pointer-events-none');
+        binauralTag.classList.remove('hidden');
+        binauralTag.textContent = `🎧 バイノーラル ${binauralBeatFreq}Hz`;
+      } else {
+        binauralBtnGroup.classList.add('opacity-50', 'pointer-events-none');
+        binauralTag.classList.add('hidden');
+      }
+      if (isPlaying) strikeTuningFork();
+    }
+
+    // ソルフェジオ・プリセットボタン群の動的生成
+    function renderSolfeggioPresets() {
+      solfeggioContainer.innerHTML = '';
+      SOLFEGGIO_DATA.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `solfeggio-btn flex-shrink-0 px-3 py-2 rounded-xl text-left border transition min-w-[105px] ${
+          item.freq === 528 ? 'border-emerald-400 bg-emerald-950/80 text-emerald-200' : 'border-slate-700/80 bg-slate-800/80 text-slate-300'
+        }`;
+        btn.dataset.freq = item.freq;
+
+        btn.innerHTML = `
+          <div class="text-xs font-bold font-mono-num pointer-events-none">${item.name}</div>
+          <div class="text-[10px] opacity-80 truncate pointer-events-none">${item.tag}</div>
+        `;
+
+        btn.addEventListener('click', () => {
+          if (solfeggioContainer.dataset.isDragging === 'true') return;
+          updateFrequency(item.freq);
+          // 連続音再生中の場合は停止せず周波数を滑らかに変更、音叉モードや停止中のみ打撃発音
+          if (!isPlaying || currentMode === 'fork') {
+            strikeTuningFork();
+          }
+        });
+
+        solfeggioContainer.appendChild(btn);
+      });
+    }
+
+    // 横スクロール・スライド操作の強化（マウスドラッグ＆ホイールスクロール対応）
+    function setupHorizontalScroll() {
+      const container = solfeggioContainer;
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+
+      container.addEventListener('mousedown', (e) => {
+        isDown = true;
+        solfeggioContainer.dataset.isDragging = 'false';
+        startX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+      });
+
+      container.addEventListener('mouseleave', () => {
+        isDown = false;
+      });
+
+      container.addEventListener('mouseup', () => {
+        isDown = false;
+        setTimeout(() => {
+          solfeggioContainer.dataset.isDragging = 'false';
+        }, 50);
+      });
+
+      container.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        if (Math.abs(x - startX) > 5) {
+          solfeggioContainer.dataset.isDragging = 'true';
+        }
+        container.scrollLeft = scrollLeft - walk;
+      });
+
+      // マウスホイールでの横スライド
+      container.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          container.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+
+      // ◀ ▶ 矢印ボタンでのスライド
+      document.getElementById('scrollLeftBtn')?.addEventListener('click', () => {
+        container.scrollBy({ left: -180, behavior: 'smooth' });
+      });
+      document.getElementById('scrollRightBtn')?.addEventListener('click', () => {
+        container.scrollBy({ left: 180, behavior: 'smooth' });
+      });
+    }
+
+    function setupEventListeners() {
+      setupHorizontalScroll();
+
+      // 発音アクション
+      forkContainer.addEventListener('click', () => {
+        if (currentMode !== 'fork' && isPlaying) {
+          stopSound();
+        } else {
+          strikeTuningFork();
+        }
+      });
+
+      playBtn.addEventListener('click', strikeTuningFork);
+      stopBtn.addEventListener('click', stopSound);
+
+      // モード選択ボタン
+      modeForkBtn.addEventListener('click', () => setMode('fork'));
+      modeContBtn.addEventListener('click', () => setMode('cont'));
+      modeBrainBtn.addEventListener('click', () => setMode('brain'));
+
+      // スライダー操作
+      freqSlider.addEventListener('input', (e) => {
+        updateFrequency(e.target.value);
+      });
+
+      // +/- ステップボタン
+      document.querySelectorAll('.step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const step = parseFloat(btn.dataset.step);
+          updateFrequency(currentFreq + step);
+        });
+      });
+
+      // バイノーラルスイッチ
+      binauralToggle.addEventListener('change', (e) => {
+        toggleBinaural(e.target.checked);
+      });
+
+      // 脳波タイプ切り替えボタン
+      document.querySelectorAll('.brain-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.brain-btn').forEach(b => b.classList.remove('border-cyan-400', 'bg-cyan-950'));
+          btn.classList.add('border-cyan-400', 'bg-cyan-950');
+
+          binauralBeatFreq = parseFloat(btn.dataset.beat);
+          binauralTag.textContent = `🎧 バイノーラル ${binauralBeatFreq}Hz`;
+
+          freqTitle.textContent = `【${btn.dataset.name}】`;
+          freqDesc.textContent = btn.dataset.desc;
+
+          if (!isBinauralEnabled) {
+            binauralToggle.checked = true;
+            toggleBinaural(true);
+          } else if (isPlaying) {
+            strikeTuningFork();
+          }
+        });
+      });
+
+      // キーボード操作対応（スペースキー）
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          if (currentMode !== 'fork' && isPlaying) {
+            stopSound();
+          } else {
+            strikeTuningFork();
+          }
+        }
+      });
+    }
+
+    // アプリ初期化
+    window.onload = () => {
+      renderSolfeggioPresets();
+      setupEventListeners();
+      updateFrequency(528.0);
+    };
+  </script>
+</body>
+</html>
